@@ -1,3 +1,7 @@
+--Moises Ezequiel Juárez Mejía 00038221 
+--Roberto Andrés Marenco Rivas 00080121
+--Rafael Andrés Quezada Azenon 00084021 
+
 --Ejercicio 1
 --Mostrar la lista de clientes que han contratado el plan "Premium". Ordenar el resultado con respecto al
 --id del cliente en orden ascendente. Almacenar el resultado en una nueva tabla llamada "CLIENTES_PREMIUM”.
