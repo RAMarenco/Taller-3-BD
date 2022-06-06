@@ -140,6 +140,6 @@ WITH tmp AS
 )
 
 SELECT 
-    semana, SUM(Ganancia) 'Ganancia Semanal'
+    semana, SUM(Ganancia) 'ganancia_semanal'
 FROM tmp
 GROUP BY semana;
