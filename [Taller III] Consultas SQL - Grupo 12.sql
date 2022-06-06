@@ -123,10 +123,10 @@ WITH tmp AS
             WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN 'Semana 4'
         END AS semana,
         CASE
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN CAST((c.precio + ISNULL(SUM(md.precio),0))*1.13 AS DECIMAL(10,2))
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN CAST((c.precio + ISNULL(SUM(md.precio),0))*1.13 AS DECIMAL(10,2))
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN CAST((c.precio + ISNULL(SUM(md.precio),0))*1.13 AS DECIMAL(10,2))
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN CAST((c.precio + ISNULL(SUM(md.precio),0))*1.13 AS DECIMAL(10,2))
         END AS Ganancia
     FROM CONSULTA c
     INNER JOIN CLIENTE cl
