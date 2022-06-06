@@ -143,33 +143,3 @@ SELECT
     semana, SUM(Ganancia) 'Ganancia Semanal'
 FROM tmp
 GROUP BY semana;
-
-SELECT     
-    CASE
-        WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN 'Semana 1'
-        WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN 'Semana 2'
-        WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN 'Semana 3'
-        WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN 'Semana 4'
-    END AS 'semana',
-    SUM(
-        CASE
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
-        END) 'ganancia'
-FROM CONSULTA c
-INNER JOIN CLIENTE cl
-    ON c.id_cliente = cl.id
-LEFT JOIN RECETA r
-    ON r.id_consulta = c.id
-LEFT JOIN MEDICAMENTO md
-    ON r.id_medicamento = md.id
-WHERE (CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-31')
-GROUP BY( 
-CASE
-    WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN 'Semana 1'
-    WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN 'Semana 2'
-    WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN 'Semana 3'
-    WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN 'Semana 4'
-END);
