@@ -113,21 +113,16 @@ ORDER BY
 --un reporte especial que consiste en mostrar las ganancias del mes de mayo de 2022 pero
 --organizadas en base a 4 grupos de fechas. Por acuerdo del comité, los 4 grupos son los siguientes:
 
-WITH tmp AS
-(
-    SELECT
-        CASE
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN 'Semana 1'
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN 'Semana 2'
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN 'Semana 3'
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN 'Semana 4'
-        END AS semana,
-        CASE
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN CAST((c.precio + ISNULL(SUM(md.precio),0))*1.13 AS DECIMAL(10,2))
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN CAST((c.precio + ISNULL(SUM(md.precio),0))*1.13 AS DECIMAL(10,2))
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN CAST((c.precio + ISNULL(SUM(md.precio),0))*1.13 AS DECIMAL(10,2))
-            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN CAST((c.precio + ISNULL(SUM(md.precio),0))*1.13 AS DECIMAL(10,2))
-        END AS Ganancia
+SELECT
+    CASE
+        WHEN CONVERT(DATE,tmpDatos.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN 'Semana 1'
+        WHEN CONVERT(DATE,tmpDatos.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN 'Semana 2'
+        WHEN CONVERT(DATE,tmpDatos.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN 'Semana 3'
+        WHEN CONVERT(DATE,tmpDatos.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN 'Semana 4'
+    END AS semana,
+    CAST(SUM((tmpDatos.c_precio+tmpDatos.md_Precio)*1.13) AS DECIMAL(10,2)) 'ganancia_semanal'
+FROM(    
+    SELECT c.fecha AS fecha, c.precio AS c_precio, ISNULL(SUM(md.precio),0) AS md_Precio
     FROM CONSULTA c
     INNER JOIN CLIENTE cl
         ON c.id_cliente = cl.id
@@ -137,9 +132,13 @@ WITH tmp AS
         ON r.id_medicamento = md.id
     GROUP BY
         c.id, c.fecha, cl.nombre, c.precio
-)
-
-SELECT 
-    semana, SUM(Ganancia) 'ganancia_semanal'
-FROM tmp
-GROUP BY semana;
+) AS tmpDatos
+WHERE tmpDatos.fecha BETWEEN '2022-05-01' AND '2022-05-31'
+GROUP BY (
+    CASE
+        WHEN CONVERT(DATE,tmpDatos.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN 'Semana 1'
+        WHEN CONVERT(DATE,tmpDatos.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN 'Semana 2'
+        WHEN CONVERT(DATE,tmpDatos.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN 'Semana 3'
+        WHEN CONVERT(DATE,tmpDatos.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN 'Semana 4' 
+    END
+);
