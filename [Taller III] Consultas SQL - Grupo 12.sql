@@ -7,7 +7,7 @@
 --id del cliente en orden ascendente. Almacenar el resultado en una nueva tabla llamada "CLIENTES_PREMIUM”.
 
 SELECT 
-    c.nombre 'Cliente', c.direccion 'Direccion', tp.tipo 'Tiplo de plan' 
+    c.id, c.nombre 'Cliente', c.direccion 'Dirección', tp.tipo 'Tipo de plan' 
 INTO CLIENTES_PREMIUM
 FROM CLIENTE c
 INNER JOIN TIPO_PLAN tp
@@ -24,7 +24,7 @@ ORDER BY
 --registradas
 
 SELECT TOP 2
-    cl.id, cl.nombre 'Clinida', cl.direccion 'Direccion', cl.email 'Email', COUNT(ct.id) '# de citas'
+    cl.id, cl.nombre 'Clínica', cl.direccion 'Dirección', cl.email 'Email', COUNT(ct.id) '# de citas'
 FROM CLINICA cl
 INNER JOIN CITA ct
     on cl.id = ct.id_clinica
@@ -39,8 +39,10 @@ ORDER BY
 --resultado con respecto al id del cliente en orden ascendente.
 
 SELECT
-    c.id, c.nombre, c.direccion, cc.correo, tc.telefono
+    c.id, c.nombre, c.direccion, tp.tipo, tc.telefono, cc.correo
 FROM CLIENTE c
+INNER JOIN TIPO_PLAN tp
+    ON c.id_tipo_plan = tp.id
 LEFT JOIN CORREO_CLIENTE cc
     ON c.id = cc.id_cliente
 LEFT JOIN TELEFONO_CLIENTE tc
@@ -54,8 +56,8 @@ ORDER BY
 --respecto al id de la consulta en orden ascendente.
 
 SELECT 
-    c.id '# de consulta', c.fecha 'Fecha de realizacion', c.duracion 'Duracion de la consulta',
-    m.id, m.nombre 'Nombre del medico asistente'
+    c.id '# de consulta', c.fecha 'Fecha de realización', c.duracion 'Duración de la consulta',
+    m.id 'id médico', m.nombre 'Nombre del médico asistente'
 FROM CONSULTA c
 INNER JOIN MEDICOXCONSULTA mc
     ON mc.id_consulta = c.id
@@ -70,7 +72,7 @@ ORDER BY
 --la dirección y email.
 
 SELECT
-    cl.id, cl.nombre 'Clinica', cl.direccion, cl.email
+    cl.id, cl.nombre 'Clínica', cl.direccion, cl.email
 FROM CLINICA cl
 INNER JOIN EMERGENCIA em
     ON em.id_clinica = cl.id
@@ -86,7 +88,7 @@ GROUP BY
 --13% IVA.
 
 SELECT 
-    c.id, c.fecha 'Fecha realizacion', cl.nombre 'Cliente', m.nombre 'Medico principal', ((c.precio + ISNULL(SUM(md.precio),0))*1.13) 'Ganancias por consulta'
+    c.id 'id consulta', c.fecha 'Fecha realización', cl.nombre 'Cliente', m.nombre 'Médico principal', ISNULL(SUM(md.precio),0) 'SubTotal medicamento', c.precio 'Precio Consulta', CAST((c.precio + ISNULL(SUM(md.precio),0))*1.13 AS DECIMAL(10,2)) 'Ganancias por consulta'
 FROM CONSULTA c
 INNER JOIN CLIENTE cl
     ON c.id_cliente = cl.id
@@ -115,17 +117,17 @@ WITH tmp AS
 (
     SELECT
         CASE
-            WHEN c.fecha BETWEEN '2022-05-01' AND '2022-05-08' THEN ((c.precio + ISNULL(SUM(md.precio),0))*1.13)
-        END AS UNO,
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN 'Semana 1'
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN 'Semana 2'
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN 'Semana 3'
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN 'Semana 4'
+        END AS Semanas,
         CASE
-            WHEN c.fecha BETWEEN '2022-05-08' AND '2022-05-15' THEN ((c.precio + ISNULL(SUM(md.precio),0))*1.13)
-        END AS DOS,
-        CASE
-            WHEN c.fecha BETWEEN '2022-05-15' AND '2022-05-22' THEN ((c.precio + ISNULL(SUM(md.precio),0))*1.13)
-        END AS TRES,
-        CASE
-            WHEN c.fecha BETWEEN '2022-05-22' AND '2022-05-31' THEN ((c.precio + ISNULL(SUM(md.precio),0))*1.13)
-        END AS CUATRO
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-01' AND '2022-05-08' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-09' AND '2022-05-15' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-16' AND '2022-05-22' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
+            WHEN CONVERT(DATE,c.fecha) BETWEEN '2022-05-23' AND '2022-05-31' THEN CONVERT(DECIMAL(10,2),(c.precio + ISNULL(SUM(md.precio),0))*1.13)
+        END AS Ganancia
     FROM CONSULTA c
     INNER JOIN CLIENTE cl
         ON c.id_cliente = cl.id
@@ -136,11 +138,13 @@ WITH tmp AS
     LEFT JOIN RECETA r
         ON r.id_consulta = c.id
     LEFT JOIN MEDICAMENTO md
-        ON r.id_medicamento = md.id        
+        ON r.id_medicamento = md.id
+    WHERE mc.rol = 1  
     GROUP BY
         c.id, c.fecha, cl.nombre, m.nombre, c.precio
 )
 
 SELECT 
-    SUM(UNO) AS 'Semana 1', SUM(DOS) AS 'Semana 2', SUM(TRES) AS 'Semana 3', SUM(CUATRO) AS 'Semana 4'
-FROM tmp;
+    Semanas, SUM(Ganancia) 'Ganancia Semanal'
+FROM tmp
+GROUP BY Semanas;
